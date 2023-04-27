@@ -61,13 +61,13 @@
             const url = $(this).attr('href');
 
             // Cria um elemento de progresso
-            const progress = $('<div>').addClass('bg-gray-300 h-2 rounded-sm mt-10 progress-bar');
+            const progress = $('<div>').addClass('bg-gray-300 h-2 rounded-sm mt-10');
 
             // Insere o elemento de progresso no div result
             $(this).parent().after(progress);
 
             // Cria um elemento de porcentagem de download
-            const percentage = $('<span>').addClass('text-xs ml-2');
+            const percentage = $('<span>').addClass('text-xs ml-2 progress-bar');
 
             // Insere o elemento de porcentagem de download no div result
             $(this).parent().append(percentage);

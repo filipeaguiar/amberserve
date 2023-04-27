@@ -24,7 +24,7 @@
           // Cria a lista de jogos
           const system = $('#system option:selected').text();
           const games = data.map(game => {
-            const url = `http://localhost:8080/download/${system}?arquivo=${id}/${game.arquivo}`;
+            const url = `http://localhost:8080/download/${system}?arquivo=${id}/${encodeURIComponent(game.arquivo)}`;
             return `<li class="py-3"><a href="${url}" class="download-link">${game.nome}</a></li>`;
           }).join('');
 
@@ -34,6 +34,25 @@
           // Mostra o div result
           result.removeClass('hidden');
 
+          // define a função que atualizará a barra de download
+          function updateProgressBar () {
+            $.get('/progress', function (data) {
+              var progress = parseInt(data.progress);
+              $('.progress-bar').css('width', progress + '%').attr('aria-valuenow', progress);
+              if (progress < 100) {
+                setTimeout(updateProgressBar, 1000);
+              } else {
+                $('.progress').removeClass('active');
+                $('.progress-bar').text('Download Concluído');
+                setTimeout(function () {
+                  $('.progress').hide();
+                }, 1000);
+              }
+            });
+          }
+          setTimeout(updateProgressBar, 1000);
+
+
           // Adiciona o evento de click nos links de download
           $(document).on('click', '.download-link', function (event) {
             event.preventDefault();
@@ -42,7 +61,7 @@
             const url = $(this).attr('href');
 
             // Cria um elemento de progresso
-            const progress = $('<div>').addClass('bg-gray-300 h-2 rounded-sm mt-2');
+            const progress = $('<div>').addClass('bg-gray-300 h-2 rounded-sm mt-10 progress-bar');
 
             // Insere o elemento de progresso no div result
             $(this).parent().after(progress);
@@ -55,43 +74,15 @@
 
             // Faz a requisição AJAX para fazer o download do arquivo
             $.ajax({
-              xhr: function () {
-                const xhr = new window.XMLHttpRequest();
-                xhr.addEventListener('progress', function (event) {
-                  if (event.lengthComputable) {
-                    // Calcula a porcentagem de download
-                    const percentComplete = event.loaded / event.total * 100;
-
-                    // Atualiza a porcentagem de download
-                    percentage.text(`${percentComplete.toFixed(2)}%`);
-
-                    // Atualiza a barra de progresso
-                    progress.css('width', `${percentComplete}%`);
-                  }
-                });
-                return xhr;
-              },
               url: url,
               method: 'GET',
-              success: function (data) {
-                // Define o conteúdo do div progress
-                percentage.text('100%');
-                progress.css('width', '100%');
-
-                // Define o conteúdo do div progress
-                $('#progress-content').html('Download concluído.');
-
-                // Mostra o div progress por 3 segundos
-                $('#progress').removeClass('hidden');
-                setTimeout(function () {
-                  $('#progress').addClass('hidden');
-                }, 3000);
-              }
+              timeout: 10000,
             });
           });
+          updateProgressBar()
         });
       });
-    });
+    })
   </script>
 
 </head>

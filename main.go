@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -13,7 +14,42 @@ import (
 	"strings"
 )
 
+func downloadIA() error {
+	iaPath := "/roms/ports/amberserver/ia"
+	if _, err := os.Stat(iaPath); os.IsNotExist(err) {
+		fmt.Println("Downloading ia executable...")
+		err := exec.Command("wget", "-O", iaPath, "https://archive.org/download/ia-pex/ia").Run()
+		if err != nil {
+			return fmt.Errorf("failed to download ia executable: %s", err)
+		}
+		err = os.Chmod(iaPath, 0755)
+		if err != nil {
+			return fmt.Errorf("failed to set ia executable permissions: %s", err)
+		}
+	}
+	return nil
+}
+
+func downloadHandler(w http.ResponseWriter, r *http.Request) {
+	platform := strings.TrimPrefix(r.URL.Path, "/download/")
+	platform = strings.TrimSuffix(platform, r.URL.RawQuery)
+	arquivo := r.URL.Query().Get("arquivo")
+	arquivo = strings.ReplaceAll(arquivo, "%20", " ")
+	exec.Command("echo", "0%", ">", "/roms/amberserver/download.log").Run()
+	cmd := exec.Command("/roms/ports/amberserver/downloader.sh", platform, arquivo)
+	fmt.Println(cmd.String())
+	err := cmd.Run()
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Fprint(w, "Arquivo baixado com sucesso!")
+}
+
 func main() {
+	err := downloadIA()
+	if err != nil {
+		panic(err)
+	}
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "static/index.html")
 	})
@@ -25,9 +61,9 @@ func main() {
 
 	http.HandleFunc("/platforms/", func(w http.ResponseWriter, r *http.Request) {
 		id := r.URL.Path[len("/platforms/"):]
-		out, err := exec.Command("/usr/bin/ia", "list", id).Output()
+		out, err := exec.Command("/roms/ports/amberserver/ia", "list", id).Output()
 		if err != nil {
-			http.Error(w, fmt.Sprintf("Failed to execute command: %s", err.Error()), http.StatusInternalServerError)
+			http.Error(w, fmt.Sprintf("Failed to execute command: %s", err), http.StatusInternalServerError)
 			return
 		}
 
@@ -56,45 +92,10 @@ func main() {
 		json.NewEncoder(w).Encode(result)
 	})
 
-	http.HandleFunc("/download/", func(w http.ResponseWriter, r *http.Request) {
-		// Parse URL parameters
-		params := r.URL.Query()
-		platform := strings.TrimPrefix(r.URL.Path, "/download/")
-		arquivo := params.Get("arquivo")
-
-		// Check if platform and arquivo are valid
-		if platform == "" || arquivo == "" {
-			http.Error(w, "Invalid URL parameters", http.StatusBadRequest)
-			return
-		}
-
-		// Execute wget command in /roms/:platform directory
-		cmd := exec.Command("wget", "-b", "-o", "/roms/ports/amberserver/download.log", "https://archive.org/download/"+arquivo)
-		cmd.Dir = fmt.Sprintf("/roms/%s", platform)
-		err := cmd.Start()
-		if err != nil {
-			http.Error(w, fmt.Sprintf("Failed to execute command: %s", err.Error()), http.StatusInternalServerError)
-			return
-		}
-		err = cmd.Wait()
-		if err != nil {
-			http.Error(w, fmt.Sprintf("Failed to execute command: %s", err.Error()), http.StatusInternalServerError)
-			return
-		}
-
-		// Remove wget.log file
-		err = os.Remove(fmt.Sprintf("/roms/ports/amberserver/download.log"))
-		if err != nil {
-			http.Error(w, fmt.Sprintf("Failed to remove file: %s", err.Error()), http.StatusInternalServerError)
-			return
-		}
-
-		// Return success message
-		fmt.Fprintf(w, "Download completed for arquivo=%s in /roms/%s\n", arquivo, platform)
-	})
+	http.HandleFunc("/download/", downloadHandler)
 
 	http.HandleFunc("/progress", func(w http.ResponseWriter, r *http.Request) {
-		content, err := ioutil.ReadFile("download.log")
+		content, err := ioutil.ReadFile("/roms/ports/amberserver/download.log")
 		if err != nil {
 			fmt.Fprint(w, "0%")
 			return
@@ -117,8 +118,7 @@ func main() {
 		fmt.Fprintf(w, "%d%%", highestPercent)
 	})
 
-	err := http.ListenAndServe(":8080", nil)
-	if err != nil {
+	if err = http.ListenAndServe(":8080", nil); err != nil {
 		panic(err)
 	}
 }

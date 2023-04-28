@@ -36,17 +36,17 @@
             },
 
             methods: {
-                async getGameList(platform) {
+                async getGameList (platform) {
                     const result = await fetch(`http://localhost:8080/platforms/${this.system.collection}`)
                     this.gameList = await result.json()
                 },
-                async requestDownload(game) {
+                async requestDownload (game) {
                     console.log(`http://localhost:8080/download/${this.system.collection}?arquivo=${game}`)
                     const result = await fetch(`http://localhost:8080/download/${this.system.platform}?arquivo=${this.system.collection}/${encodeURIComponent(game)}`)
                     this.unfinished = false
                     this.getProgress()
                 },
-                getProgress() {
+                getProgress () {
                     const self = this
                     const intervalId = setInterval(async function () {
                         console.log(intervalId)
@@ -59,19 +59,9 @@
                         }
                     }, 1000);
                 }
-                // async getProgress() {
-                //     const result = await fetch(`http://localhost:8080/progress`)
-                //     this.progress = await result.text()
-                //     console.log(this.progress)
-                //     if(this.progress = '100%') {
-                //         this.unfinished = false
-                //         clearInterval(this.intervalID)
-                //     }
-                // },
-
             },
 
-            created() {
+            created () {
                 this.msg = "mensagem alterada"
             }
         });

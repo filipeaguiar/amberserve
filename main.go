@@ -51,7 +51,7 @@ func main() {
 		panic(err)
 	}
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "static/index.html")
+		http.ServeFile(w, r, "static/index2.html")
 	})
 
 	type Platform struct {

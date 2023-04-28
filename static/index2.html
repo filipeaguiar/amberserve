@@ -47,14 +47,15 @@
                     this.getProgress()
                 },
                 getProgress() {
-                    this.intervalId = setInterval(async function () {
-                        
+                    const self = this
+                    const intervalId = setInterval(async function () {
+                        console.log(intervalId)
+                        self.intervalID = intervalId
                         const response = await fetch('http://localhost:8080/progress')
-                        this.progress = await response.text()
-                        console.log(this.progress)
-                        if (this.progress === '100%') {
-                            this.unfinished = true
-                            clearInterval(this.intervalID)
+                        self.progress = await response.text()
+                        if (self.progress === '100%') {
+                            self.unfinished = true
+                            clearInterval(self.intervalID)
                         }
                     }, 1000);
                 }

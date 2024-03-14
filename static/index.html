@@ -18,6 +18,7 @@
                     { collection: "projeto-launchbox-sony-playstation", platform: "psx" },
                     { collection: "nointro.gba", platform: "gba" },
                     { collection: "nointro.gbc", platform: "gbc" },
+                    { collection: "nointro.nes-headered", platform: "nes" },
                     { collection: "nointro.snes", platform: "snes" },
                     { collection: "nointro.ms-mkiii", platform: "mastersystem" },
                     { collection: "nointro.md", platform: "megadrive" },
@@ -37,12 +38,12 @@
 
             methods: {
                 async getGameList (platform) {
-                    const result = await fetch(`http://localhost:8080/platforms/${this.system.collection}`)
+                    const result = await fetch(`/platforms/${this.system.collection}`)
                     this.gameList = await result.json()
                 },
                 async requestDownload (game) {
-                    console.log(`http://localhost:8080/download/${this.system.collection}?arquivo=${game}`)
-                    const result = await fetch(`http://localhost:8080/download/${this.system.platform}?arquivo=${this.system.collection}/${encodeURIComponent(game)}`)
+                    console.log(`/download/${this.system.collection}?arquivo=${game}`)
+                    const result = await fetch(`/download/${this.system.platform}?arquivo=${this.system.collection}/${encodeURIComponent(game)}`)
                     this.unfinished = false
                     this.getProgress()
                 },
@@ -51,7 +52,7 @@
                     const intervalId = setInterval(async function () {
                         console.log(intervalId)
                         self.intervalID = intervalId
-                        const response = await fetch('http://localhost:8080/progress')
+                        const response = await fetch('/progress')
                         self.progress = await response.text()
                         if (self.progress === '100%') {
                             self.unfinished = true

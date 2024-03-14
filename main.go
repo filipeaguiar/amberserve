@@ -60,6 +60,9 @@ func main() {
 	}
 
 	http.HandleFunc("/platforms/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POSTS, OPTIONS")
+		w.Header().Set("Access-control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 		id := r.URL.Path[len("/platforms/"):]
 		out, err := exec.Command("/roms/ports/amberserver/ia", "list", id).Output()
 		if err != nil {
@@ -95,6 +98,9 @@ func main() {
 	http.HandleFunc("/download/", downloadHandler)
 
 	http.HandleFunc("/progress", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POSTS, OPTIONS")
+		w.Header().Set("Access-control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 		content, err := ioutil.ReadFile("/roms/ports/amberserver/download.log")
 		if err != nil {
 			fmt.Fprint(w, "0%")

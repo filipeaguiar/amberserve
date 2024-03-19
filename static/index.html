@@ -58,7 +58,13 @@
                             self.unfinished = true
                             clearInterval(self.intervalID)
                         }
-                    }, 1000);
+                    }, 1000)
+                },
+                scrollToTop() {
+                    window.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
+                    })
                 }
             },
 
@@ -71,10 +77,10 @@
 </head>
 
 <body class="min-h-screen bg-gradient-to-b from-blue-500 to-blue-900 bg-no-repeat">
-    <div id="app">
-        <div class="mx-auto max-w-screen-lg flex flex-col mt-10 bg-white rounded-lg shadow-md p-4">
+    <div id="app" class="mx-auto max-w-screen-lg flex flex-col mt-10">
+        <div class="bg-white rounded-lg shadow-md p-4 px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 mb-4">
             <select id="collection" v-model="system"
-                class="appearance-none bg-white border border-gray-400 hover:border-gray-500 px-4 py-2 pr-8 rounded shadow text-gray-700 w-full mb-3">
+                class="appearance-none bg-white border border-gray-400 hover:border-gray-500 px-4 py-2 pr-8 rounded shadow text-gray-700 w-full mb-3 text-xl md:text-7xl">
                 <option v-for="system in platforms" :value="{
                         collection: system.collection,
                         platform: system.platform
@@ -83,7 +89,7 @@
                 </option>
             </select>
             <button
-                class="bg-blue-500 hover:bg-blue-700 w-full text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                class="bg-blue-500 hover:bg-blue-700 w-full text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline md:text-7xl"
                 type="submit" @click="getGameList(system.collection)">
                 Enviar
             </button>
@@ -92,11 +98,11 @@
                 Progresso - {{progress}}
             </div>
         </div>
-        <div class="mx-auto max-w-screen-lg w-full text-center">
+        <div class="text-center">
             <div id="result" v-if="gameList.length"
-                class="bg-white rounded-lg shadow-md p-4 mt-10 max-w-screen-lg w-full">
+                class="bg-white rounded-lg shadow-md p-4 mt-10 max-w-screen-lg w-full md:text-5xl md:py-8">
                 <ul>
-                    <li v-for="game in gameList" :key="game.nome" @click="requestDownload(game.arquivo)">
+                    <li v-for="game in gameList" :key="game.nome" @click="requestDownload(game.arquivo); scrollToTop()" class="md:my-10">
                         <strong>{{game.nome}}</strong>
                     </li>
                 </ul>

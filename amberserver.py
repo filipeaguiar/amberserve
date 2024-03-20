@@ -51,12 +51,12 @@ class DownloadServer(BaseHTTPRequestHandler):
         arquivo = query_dict.get("arquivo", [""])[0].replace("%20", " ")
 
         # Separando o nome do arquivo em folder e arquivo
-        folder, arquivo = arquivo.split("/")
-
+        collection, arquivo = arquivo.split("/")
+        folder = platform.split("?")[0]
         # subprocess.run(["echo", "0%", ">", DOWNLOAD_LOG], check=True)
         downloader_script = os.path.join(ROMS_DIR, "ia")
         # subprocess.run([downloader_script, platform, folder, arquivo], check=True)
-        print(f'Plataform: {platform}')
+        print(f'collection: {collection}')
         print(f'arquivo: {arquivo}')
         print(f'folder: {folder}')
         self.send_response(200)

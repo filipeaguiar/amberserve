@@ -55,7 +55,8 @@ class DownloadServer(BaseHTTPRequestHandler):
         folder = platform.split("?")[0]
         # subprocess.run(["echo", "0%", ">", DOWNLOAD_LOG], check=True)
         downloader_script = os.path.join(ROMS_DIR, "ia")
-        # subprocess.run([downloader_script, platform, folder, arquivo], check=True)
+        # $IA download --no-directories "$1" --glob="${2}" --destdir "$REPO/$SYSTEM"
+        subprocess.run([downloader_script, "download", "--no-directories", collection, f'"{arquivo}"', "--destdir", f'/roms/{folder}'], check=True)
         print(f'collection: {collection}')
         print(f'arquivo: {arquivo}')
         print(f'folder: {folder}')

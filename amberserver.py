@@ -47,11 +47,19 @@ class DownloadServer(BaseHTTPRequestHandler):
     def handle_download(self):
         _, _, query = self.path.partition("?")
         query_dict = urllib.parse.parse_qs(query)
-        platform = self.path[len("/download/"):].split("/")[0]
+        platform = self.path.split("/")[2]  # Alteração aqui para pegar a plataforma diretamente
         arquivo = query_dict.get("arquivo", [""])[0].replace("%20", " ")
-        subprocess.run(["echo", "0%", ">", DOWNLOAD_LOG], check=True)
-        downloader_script = os.path.join(ROMS_DIR, "downloader.sh")
-        subprocess.run([downloader_script, platform, arquivo], check=True)
+
+        # Separando o nome do arquivo em folder e arquivo
+        collection, arquivo = arquivo.split("/")
+        folder = platform.split("?")[0]
+        # subprocess.run(["echo", "0%", ">", DOWNLOAD_LOG], check=True)
+        downloader_script = os.path.join(ROMS_DIR, "ia")
+        # $IA download --no-directories "$1" --glob="${2}" --destdir "$REPO/$SYSTEM"
+        subprocess.run([downloader_script, "download", "--no-directories", collection, f'"{arquivo}"', "--destdir", f'/roms/{folder}'], check=True)
+        print(f'collection: {collection}')
+        print(f'arquivo: {arquivo}')
+        print(f'folder: {folder}')
         self.send_response(200)
         self.send_header("Content-type", "text/plain")
         self.end_headers()
@@ -90,9 +98,9 @@ def download_ia():
 
 def main():
     download_ia()
-    server_address = ("", 8888)
+    server_address = ("", 8080)
     httpd = HTTPServer(server_address, DownloadServer)
-    print("Server running at localhost:8888")
+    print("Server running at localhost:8080")
     httpd.serve_forever()
 
 
